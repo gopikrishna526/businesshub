@@ -39,4 +39,12 @@ public class GlobalExceptionHandler {
 		return new ValidationErrorResponse(LocalDateTime.now(), HttpStatus.BAD_REQUEST.value(), "Validation Failed",
 				errors);
 	}
+
+	@ExceptionHandler(CustomerNotFoundException.class)
+	@ResponseStatus(HttpStatus.NOT_FOUND)
+	public ErrorResponse handleCustomerNotFound(CustomerNotFoundException ex) {
+
+		return new ErrorResponse(LocalDateTime.now(), HttpStatus.NOT_FOUND.value(), "Customer Not Found",
+				ex.getMessage());
+	}
 }
