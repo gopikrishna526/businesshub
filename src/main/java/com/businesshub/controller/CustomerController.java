@@ -1,12 +1,13 @@
-package com.businesshub.business;
+package com.businesshub.controller;
 
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import com.businesshub.business.dto.CustomerRequestDTO;
-import com.businesshub.business.dto.CustomerResponseDTO;
+import com.businesshub.dto.CustomerRequestDTO;
+import com.businesshub.dto.CustomerResponseDTO;
+import com.businesshub.service.CustomerService;
 
 import jakarta.validation.Valid;
 

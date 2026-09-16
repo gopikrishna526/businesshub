@@ -1,47 +1,26 @@
-package com.businesshub.business;
+package com.businesshub.dto;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-@Entity
-@Table(name = "businesses")
-public class Business {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+public class BusinessRequestDTO {
 
 	@NotBlank(message = "Business name is required")
 	@Size(min = 3, max = 100, message = "Business name must be between 3 and 100 characters")
-	@Column(nullable = false)
 	private String businessName;
 
 	@Email(message = "Please provide a valid email address")
 	private String email;
 
 	@NotBlank(message = "Phone number is required")
-	@Size(min = 10, max = 10, message = "Phone number must contain 10 digits")
 	@Pattern(regexp = "^[0-9]{10}$", message = "Phone number must contain exactly 10 digits")
 	private String phone;
 
 	private String address;
 
-	public Business() {
-	}
-
-	public Business(Long id, String businessName, String email, String phone, String address) {
-		this.id = id;
-		this.businessName = businessName;
-		this.email = email;
-		this.phone = phone;
-		this.address = address;
-	}
-
-	public Long getId() {
-		return id;
+	public BusinessRequestDTO() {
 	}
 
 	public String getBusinessName() {
@@ -58,10 +37,6 @@ public class Business {
 
 	public String getAddress() {
 		return address;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public void setBusinessName(String businessName) {

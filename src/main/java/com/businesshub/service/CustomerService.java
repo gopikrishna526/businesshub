@@ -1,12 +1,18 @@
-package com.businesshub.business;
+package com.businesshub.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import com.businesshub.business.dto.CustomerRequestDTO;
-import com.businesshub.business.dto.CustomerResponseDTO;
-import com.businesshub.business.mapper.CustomerMapper;
+import com.businesshub.dto.CustomerRequestDTO;
+import com.businesshub.dto.CustomerResponseDTO;
+import com.businesshub.entity.BusinessEntity;
+import com.businesshub.entity.CustomerEntity;
+import com.businesshub.exception.BusinessNotFoundException;
+import com.businesshub.exception.CustomerNotFoundException;
+import com.businesshub.mapper.CustomerMapper;
+import com.businesshub.repository.BusinessRepository;
+import com.businesshub.repository.CustomerRepository;
 
 @Service
 public class CustomerService {
@@ -25,10 +31,10 @@ public class CustomerService {
 
 	public CustomerResponseDTO createCustomer(CustomerRequestDTO request) {
 
-		Business business = businessRepository.findById(request.getBusinessId()).orElseThrow(
+		BusinessEntity business = businessRepository.findById(request.getBusinessId()).orElseThrow(
 				() -> new BusinessNotFoundException("Business not found with id: " + request.getBusinessId()));
 
-		Customer customer = new Customer();
+		CustomerEntity customer = new CustomerEntity();
 
 		customer.setName(request.getName());
 		customer.setEmail(request.getEmail());
@@ -37,7 +43,7 @@ public class CustomerService {
 
 		customer.setBusiness(business);
 
-		Customer savedCustomer = customerRepository.save(customer);
+		CustomerEntity savedCustomer = customerRepository.save(customer);
 
 		return customerMapper.toResponseDTO(savedCustomer);
 	}
@@ -49,7 +55,7 @@ public class CustomerService {
 
 	public CustomerResponseDTO getCustomerById(Long id) {
 
-		Customer customer = customerRepository.findById(id)
+		CustomerEntity customer = customerRepository.findById(id)
 				.orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + id));
 
 		return customerMapper.toResponseDTO(customer);
@@ -66,10 +72,10 @@ public class CustomerService {
 
 	public CustomerResponseDTO updateCustomer(Long id, CustomerRequestDTO request) {
 
-		Customer existingCustomer = customerRepository.findById(id)
+		CustomerEntity existingCustomer = customerRepository.findById(id)
 				.orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + id));
 
-		Business business = businessRepository.findById(request.getBusinessId()).orElseThrow(
+		BusinessEntity business = businessRepository.findById(request.getBusinessId()).orElseThrow(
 				() -> new BusinessNotFoundException("Business not found with id: " + request.getBusinessId()));
 
 		existingCustomer.setName(request.getName());
@@ -78,14 +84,14 @@ public class CustomerService {
 		existingCustomer.setAddress(request.getAddress());
 		existingCustomer.setBusiness(business);
 
-		Customer updatedCustomer = customerRepository.save(existingCustomer);
+		CustomerEntity updatedCustomer = customerRepository.save(existingCustomer);
 
 		return customerMapper.toResponseDTO(updatedCustomer);
 	}
 
 	public void deleteCustomer(Long id) {
 
-		Customer existingCustomer = customerRepository.findById(id)
+		CustomerEntity existingCustomer = customerRepository.findById(id)
 				.orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + id));
 
 		customerRepository.delete(existingCustomer);

@@ -1,17 +1,17 @@
-package com.businesshub.business.mapper;
+package com.businesshub.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.businesshub.business.Business;
-import com.businesshub.business.dto.BusinessRequestDTO;
-import com.businesshub.business.dto.BusinessResponseDTO;
+import com.businesshub.dto.BusinessRequestDTO;
+import com.businesshub.dto.BusinessResponseDTO;
+import com.businesshub.entity.BusinessEntity;
 
 @Component
 public class BusinessMapper {
 
-	public Business toEntity(BusinessRequestDTO request) {
+	public BusinessEntity toEntity(BusinessRequestDTO request) {
 
-		Business business = new Business();
+		BusinessEntity business = new BusinessEntity();
 
 		business.setBusinessName(request.getBusinessName());
 		business.setEmail(request.getEmail());
@@ -21,7 +21,7 @@ public class BusinessMapper {
 		return business;
 	}
 
-	public BusinessResponseDTO toResponseDTO(Business business) {
+	public BusinessResponseDTO toResponseDTO(BusinessEntity business) {
 
 		return new BusinessResponseDTO(business.getId(), business.getBusinessName(), business.getEmail(),
 				business.getPhone(), business.getAddress());

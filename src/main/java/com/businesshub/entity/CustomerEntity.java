@@ -1,10 +1,10 @@
-package com.businesshub.business;
+package com.businesshub.entity;
 
 import jakarta.persistence.*;
 
 @Entity
 @Table(name = "customers")
-public class Customer {
+public class CustomerEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,9 +21,9 @@ public class Customer {
 
 	@ManyToOne(fetch = FetchType.LAZY, optional = false)
 	@JoinColumn(name = "business_id", nullable = false)
-	private Business business;
+	private BusinessEntity business;
 
-	public Customer() {
+	public CustomerEntity() {
 	}
 
 	public Long getId() {
@@ -46,7 +46,7 @@ public class Customer {
 		return address;
 	}
 
-	public Business getBusiness() {
+	public BusinessEntity getBusiness() {
 		return business;
 	}
 
@@ -70,7 +70,7 @@ public class Customer {
 		this.address = address;
 	}
 
-	public void setBusiness(Business business) {
+	public void setBusiness(BusinessEntity business) {
 		this.business = business;
 	}
 }
