@@ -1,4 +1,4 @@
-package com.businesshub.business.dto;
+package com.businesshub.dto;
 
 public class BusinessResponseDTO {
 

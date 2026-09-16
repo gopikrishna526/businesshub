@@ -1,11 +1,15 @@
-package com.businesshub.business;
+package com.businesshub.service;
 
 import java.util.List;
 
 import org.springframework.stereotype.Service;
-import com.businesshub.business.dto.BusinessRequestDTO;
-import com.businesshub.business.dto.BusinessResponseDTO;
-import com.businesshub.business.mapper.BusinessMapper;
+
+import com.businesshub.dto.BusinessRequestDTO;
+import com.businesshub.dto.BusinessResponseDTO;
+import com.businesshub.entity.BusinessEntity;
+import com.businesshub.exception.BusinessNotFoundException;
+import com.businesshub.mapper.BusinessMapper;
+import com.businesshub.repository.BusinessRepository;
 
 @Service
 public class BusinessService {
@@ -51,7 +55,7 @@ public class BusinessService {
 //
 	public void deleteBusiness(Long id) {
 
-		Business existingBusiness = businessRepository.findById(id)
+		BusinessEntity existingBusiness = businessRepository.findById(id)
 				.orElseThrow(() -> new BusinessNotFoundException("Business not found with id: " + id));
 		businessRepository.delete(existingBusiness);
 	}
@@ -108,16 +112,16 @@ public class BusinessService {
 
 	public BusinessResponseDTO createBusiness(BusinessRequestDTO request) {
 
-		Business business = businessMapper.toEntity(request);
+		BusinessEntity business = businessMapper.toEntity(request);
 
-		Business savedBusiness = businessRepository.save(business);
+		BusinessEntity savedBusiness = businessRepository.save(business);
 
 		return businessMapper.toResponseDTO(savedBusiness);
 	}
 
 	public BusinessResponseDTO getBusinessById(Long id) {
 
-		Business business = businessRepository.findById(id)
+		BusinessEntity business = businessRepository.findById(id)
 				.orElseThrow(() -> new BusinessNotFoundException("Business not found with id: " + id));
 
 		return businessMapper.toResponseDTO(business);
@@ -130,7 +134,7 @@ public class BusinessService {
 
 	public BusinessResponseDTO updateBusiness(Long id, BusinessRequestDTO request) {
 
-		Business existingBusiness = businessRepository.findById(id)
+		BusinessEntity existingBusiness = businessRepository.findById(id)
 				.orElseThrow(() -> new BusinessNotFoundException("Business not found with id: " + id));
 
 		existingBusiness.setBusinessName(request.getBusinessName());
@@ -138,7 +142,7 @@ public class BusinessService {
 		existingBusiness.setPhone(request.getPhone());
 		existingBusiness.setAddress(request.getAddress());
 
-		Business updatedBusiness = businessRepository.save(existingBusiness);
+		BusinessEntity updatedBusiness = businessRepository.save(existingBusiness);
 
 		return businessMapper.toResponseDTO(updatedBusiness);
 	}

@@ -1,28 +1,28 @@
-package com.businesshub.business;
+package com.businesshub.exception;
 
 import java.time.LocalDateTime;
-import java.util.Map;
 
-public class ValidationErrorResponse {
+public class ErrorResponse {
 
     private LocalDateTime timestamp;
     private int status;
     private String error;
-    private Map<String, String> errors;
+    private String message;
 
-    public ValidationErrorResponse() {
+    public ErrorResponse() {
     }
 
-    public ValidationErrorResponse(
-            LocalDateTime timestamp,
-            int status,
-            String error,
-            Map<String, String> errors) {
-
+    public ErrorResponse(LocalDateTime timestamp, int status, String error, String message) {
         this.timestamp = timestamp;
         this.status = status;
         this.error = error;
-        this.errors = errors;
+        this.message = message;
+    }
+    
+    public ErrorResponse(LocalDateTime timestamp, int status, String message) {
+        this.timestamp = timestamp;
+        this.status = status;
+        this.message = message;
     }
 
     public LocalDateTime getTimestamp() {
@@ -37,8 +37,8 @@ public class ValidationErrorResponse {
         return error;
     }
 
-    public Map<String, String> getErrors() {
-        return errors;
+    public String getMessage() {
+        return message;
     }
 
     public void setTimestamp(LocalDateTime timestamp) {
@@ -53,7 +53,7 @@ public class ValidationErrorResponse {
         this.error = error;
     }
 
-    public void setErrors(Map<String, String> errors) {
-        this.errors = errors;
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

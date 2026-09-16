@@ -1,4 +1,4 @@
-package com.businesshub.business;
+package com.businesshub.exception;
 
 public class CustomerNotFoundException extends RuntimeException {
 

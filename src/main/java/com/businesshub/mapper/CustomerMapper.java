@@ -1,14 +1,14 @@
-package com.businesshub.business.mapper;
+package com.businesshub.mapper;
 
 import org.springframework.stereotype.Component;
 
-import com.businesshub.business.Customer;
-import com.businesshub.business.dto.CustomerResponseDTO;
+import com.businesshub.dto.CustomerResponseDTO;
+import com.businesshub.entity.CustomerEntity;
 
 @Component
 public class CustomerMapper {
 
-    public CustomerResponseDTO toResponseDTO(Customer customer) {
+    public CustomerResponseDTO toResponseDTO(CustomerEntity customer) {
 
         return new CustomerResponseDTO(
                 customer.getId(),

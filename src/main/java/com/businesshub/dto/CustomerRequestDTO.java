@@ -1,4 +1,4 @@
-package com.businesshub.business.dto;
+package com.businesshub.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
