@@ -3,6 +3,7 @@ package com.businesshub.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.businesshub.dto.CustomerRequestDTO;
@@ -48,6 +49,7 @@ public class CustomerController {
 	}
 
 	@DeleteMapping("/{id}")
+	@PreAuthorize("hasAuthority('ADMIN')")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteCustomer(@PathVariable Long id) {
 		customerService.deleteCustomer(id);

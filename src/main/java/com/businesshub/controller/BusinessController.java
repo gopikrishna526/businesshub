@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
 import com.businesshub.dto.BusinessRequestDTO;
 import com.businesshub.dto.BusinessResponseDTO;
 import com.businesshub.service.BusinessService;

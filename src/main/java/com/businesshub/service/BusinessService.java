@@ -2,6 +2,7 @@ package com.businesshub.service;
 
 import java.util.List;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
 import com.businesshub.dto.BusinessRequestDTO;
@@ -53,6 +54,7 @@ public class BusinessService {
 //		return businessRepository.save(existingBusiness);
 //	}
 //
+	@PreAuthorize("hasAuthority('ADMIN')")
 	public void deleteBusiness(Long id) {
 
 		BusinessEntity existingBusiness = businessRepository.findById(id)
