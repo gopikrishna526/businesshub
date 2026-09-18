@@ -11,16 +11,25 @@ import com.businesshub.entity.BusinessEntity;
 import com.businesshub.exception.BusinessNotFoundException;
 import com.businesshub.mapper.BusinessMapper;
 import com.businesshub.repository.BusinessRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.businesshub.entity.UserEntity;
+import com.businesshub.repository.UserRepository;
 
 @Service
 public class BusinessService {
 
 	private final BusinessRepository businessRepository;
 	private final BusinessMapper businessMapper;
+	private final UserRepository userRepository;
 
-	public BusinessService(BusinessRepository businessRepository, BusinessMapper businessMapper) {
+	public BusinessService(BusinessRepository businessRepository, BusinessMapper businessMapper,
+			UserRepository userRepository) {
+
 		this.businessRepository = businessRepository;
 		this.businessMapper = businessMapper;
+		this.userRepository = userRepository;
 	}
 
 //	public Business createBusiness(Business business) {
@@ -116,11 +125,20 @@ public class BusinessService {
 
 		BusinessEntity business = businessMapper.toEntity(request);
 
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+		String email = authentication.getName();
+
+		UserEntity owner = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+
+		business.setOwner(owner);
+
 		BusinessEntity savedBusiness = businessRepository.save(business);
 
 		return businessMapper.toResponseDTO(savedBusiness);
 	}
 
+	@PreAuthorize("hasAuthority('ADMIN') or @businessSecurity.isOwner(#id, authentication)")
 	public BusinessResponseDTO getBusinessById(Long id) {
 
 		BusinessEntity business = businessRepository.findById(id)
@@ -134,6 +152,7 @@ public class BusinessService {
 		return businessRepository.findAll().stream().map(businessMapper::toResponseDTO).toList();
 	}
 
+	@PreAuthorize("hasAuthority('ADMIN') or @businessSecurity.isOwner(#id, authentication)")
 	public BusinessResponseDTO updateBusiness(Long id, BusinessRequestDTO request) {
 
 		BusinessEntity existingBusiness = businessRepository.findById(id)
