@@ -28,6 +28,10 @@ public class BusinessEntity {
 	private String phone;
 
 	private String address;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private UserEntity owner;
 
 	public BusinessEntity() {
 	}
@@ -78,5 +82,13 @@ public class BusinessEntity {
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+
+	public UserEntity getOwner() {
+		return owner;
+	}
+
+	public void setOwner(UserEntity owner) {
+		this.owner = owner;
 	}
 }
