@@ -1,7 +1,5 @@
 package com.businesshub.service;
 
-import java.util.List;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +14,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.businesshub.entity.UserEntity;
 import com.businesshub.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class BusinessService {
@@ -31,38 +31,7 @@ public class BusinessService {
 		this.businessMapper = businessMapper;
 		this.userRepository = userRepository;
 	}
-
-//	public Business createBusiness(Business business) {
-//		return businessRepository.save(business);
-//	}
-//
-//	public List<Business> getAllBusinesses() {
-//		return businessRepository.findAll();
-//	}
-//
-//    public Business getBusinessById(Long id) {
-//        return businessRepository.findById(id)
-//                .orElseThrow(() -> new RuntimeException("Business not found with id: " + id));
-//    }
-//
-//	public Business getBusinessById(Long id) {
-//		return businessRepository.findById(id)
-//				.orElseThrow(() -> new BusinessNotFoundException("Business not found with id: " + id));
-//	}
-//
-//	public Business updateBusiness(Long id, Business updatedBusiness) {
-//
-//		Business existingBusiness = businessRepository.findById(id)
-//				.orElseThrow(() -> new BusinessNotFoundException("Business not found with id: " + id));
-//
-//		existingBusiness.setBusinessName(updatedBusiness.getBusinessName());
-//		existingBusiness.setEmail(updatedBusiness.getEmail());
-//		existingBusiness.setPhone(updatedBusiness.getPhone());
-//		existingBusiness.setAddress(updatedBusiness.getAddress());
-//
-//		return businessRepository.save(existingBusiness);
-//	}
-//
+	
 	@PreAuthorize("hasAuthority('ADMIN')")
 	public void deleteBusiness(Long id) {
 
@@ -70,56 +39,6 @@ public class BusinessService {
 				.orElseThrow(() -> new BusinessNotFoundException("Business not found with id: " + id));
 		businessRepository.delete(existingBusiness);
 	}
-
-//	=======================>  Above Using Entity  <=======================
-
-//	public BusinessResponseDTO createBusiness(BusinessRequestDTO request) {
-//
-//		Business business = new Business();
-//
-//		business.setBusinessName(request.getBusinessName());
-//		business.setEmail(request.getEmail());
-//		business.setPhone(request.getPhone());
-//		business.setAddress(request.getAddress());
-//
-//		Business savedBusiness = businessRepository.save(business);
-//
-//		return new BusinessResponseDTO(savedBusiness.getId(), savedBusiness.getBusinessName(), savedBusiness.getEmail(),
-//				savedBusiness.getPhone(), savedBusiness.getAddress());
-//	}
-//
-//	public BusinessResponseDTO getBusinessById(Long id) {
-//		Business business = businessRepository.findById(id)
-//				.orElseThrow(() -> new BusinessNotFoundException("Business not found with id: " + id));
-//		return new BusinessResponseDTO(business.getId(), business.getBusinessName(), business.getEmail(),
-//				business.getPhone(), business.getAddress());
-//	}
-//
-//	public List<BusinessResponseDTO> getAllBusinesses() {
-//
-//		return businessRepository
-//				.findAll().stream().map(business -> new BusinessResponseDTO(business.getId(),
-//						business.getBusinessName(), business.getEmail(), business.getPhone(), business.getAddress()))
-//				.toList();
-//	}
-//
-//	public BusinessResponseDTO updateBusiness(Long id, BusinessRequestDTO request) {
-//
-//		Business existingBusiness = businessRepository.findById(id)
-//				.orElseThrow(() -> new BusinessNotFoundException("Business not found with id: " + id));
-//
-//		existingBusiness.setBusinessName(request.getBusinessName());
-//		existingBusiness.setEmail(request.getEmail());
-//		existingBusiness.setPhone(request.getPhone());
-//		existingBusiness.setAddress(request.getAddress());
-//
-//		Business updatedBusiness = businessRepository.save(existingBusiness);
-//
-//		return new BusinessResponseDTO(updatedBusiness.getId(), updatedBusiness.getBusinessName(),
-//				updatedBusiness.getEmail(), updatedBusiness.getPhone(), updatedBusiness.getAddress());
-//	}
-
-//	=======================> Below Using Mappers  <=======================
 
 	public BusinessResponseDTO createBusiness(BusinessRequestDTO request) {
 
@@ -147,9 +66,17 @@ public class BusinessService {
 		return businessMapper.toResponseDTO(business);
 	}
 
-	public List<BusinessResponseDTO> getAllBusinesses() {
+	public Page<BusinessResponseDTO> getAllBusinesses(Pageable pageable) {
 
-		return businessRepository.findAll().stream().map(businessMapper::toResponseDTO).toList();
+	    Authentication authentication =
+	            SecurityContextHolder.getContext().getAuthentication();
+
+	    String email = authentication.getName();
+
+	    Page<BusinessEntity> businesses =
+	            businessRepository.findByOwner_Email(email, pageable);
+
+	    return businesses.map(businessMapper::toResponseDTO);
 	}
 
 	@PreAuthorize("hasAuthority('ADMIN') or @businessSecurity.isOwner(#id, authentication)")
@@ -166,5 +93,69 @@ public class BusinessService {
 		BusinessEntity updatedBusiness = businessRepository.save(existingBusiness);
 
 		return businessMapper.toResponseDTO(updatedBusiness);
+	}
+	
+	public Page<BusinessResponseDTO> searchBusinesses(
+	        String businessName,
+	        Pageable pageable) {
+
+	    Authentication authentication =
+	            SecurityContextHolder.getContext().getAuthentication();
+
+	    String email = authentication.getName();
+
+	    Page<BusinessEntity> businesses =
+	            businessRepository.findByOwner_EmailAndBusinessNameContainingIgnoreCase(
+	                    email,
+	                    businessName,
+	                    pageable);
+
+	    return businesses.map(businessMapper::toResponseDTO);
+	}
+	
+	public Page<BusinessResponseDTO> searchBusinessesByKeyword(
+	        String keyword,
+	        Pageable pageable) {
+
+	    Authentication authentication =
+	            SecurityContextHolder.getContext().getAuthentication();
+
+	    String email = authentication.getName();
+
+//	    Page<BusinessEntity> businesses =
+//	            businessRepository
+//	                    .findByOwner_EmailAndBusinessNameContainingIgnoreCaseOrOwner_EmailAndAddressContainingIgnoreCase(
+//	                            email,
+//	                            keyword,
+//	                            email,
+//	                            keyword,
+//	                            pageable);
+	    
+	    Page<BusinessEntity> businesses = businessRepository.searchByKeyword(email, keyword, pageable);
+
+	    return businesses.map(businessMapper::toResponseDTO);
+	}
+	
+	public Page<BusinessResponseDTO> filterBusinesses(
+	        String keyword,
+	        String email,
+	        Pageable pageable) {
+
+	    Authentication authentication =
+	            SecurityContextHolder.getContext().getAuthentication();
+
+	    String ownerEmail = authentication.getName();
+
+	    keyword = keyword == null ? "" : keyword.trim();
+	    email = email == null ? "" : email.trim();
+
+	    Page<BusinessEntity> businesses =
+	            businessRepository.filterBusinesses(
+	                    ownerEmail,
+	                    keyword,
+	                    email,
+	                    pageable);
+
+	    return businesses.map(businessMapper::toResponseDTO);
 	}
 }

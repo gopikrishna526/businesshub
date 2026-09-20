@@ -2,13 +2,18 @@ package com.businesshub.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.businesshub.dto.BusinessRequestDTO;
 import com.businesshub.dto.BusinessResponseDTO;
 import com.businesshub.service.BusinessService;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 
 @RestController
 @RequestMapping("/api/businesses")
@@ -20,39 +25,12 @@ public class BusinessController {
 		this.businessService = businessService;
 	}
 
-//	@PostMapping
-//	@ResponseStatus(HttpStatus.CREATED)
-//	public Business createBusiness(@Valid @RequestBody Business business) {
-//		return businessService.createBusiness(business);
-//	}
-//
-//	@GetMapping
-//	public List<Business> getAllBusinesses() {
-//		return businessService.getAllBusinesses();
-//	}
-//
-//	@GetMapping("/{id}")
-//	public Business getBusinessById(@PathVariable Long id) {
-//		return businessService.getBusinessById(id);
-//	}
-//
-//	@PutMapping("/{id}")
-//	public Business updateBusiness(@PathVariable Long id, @Valid @RequestBody Business business) {
-//		return businessService.updateBusiness(id, business);
-//	}
-//	
 	@DeleteMapping("/{id}")
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	public void deleteBusiness(@PathVariable Long id) {
 	    businessService.deleteBusiness(id);
 	}
 	
-	
-
-//	=======================>  Using Entity  <=======================
-	
-	
-
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
 	public BusinessResponseDTO createBusiness(
@@ -60,14 +38,46 @@ public class BusinessController {
 	    return businessService.createBusiness(request);
 	}
 	
+	@GetMapping("/search")
+	public ResponseEntity<Page<BusinessResponseDTO>> searchBusinesses(
+	        @RequestParam @NotBlank String businessName,
+	        @PageableDefault(size = 5) Pageable pageable) {
+
+	    return ResponseEntity.ok(
+	            businessService.searchBusinesses(businessName, pageable)
+	    );
+	}
+	
+	@GetMapping("/filter")
+	public ResponseEntity<Page<BusinessResponseDTO>> filterBusinesses(
+	        @RequestParam(required = false) String keyword,
+	        @RequestParam(required = false) String email,
+	        @PageableDefault(size = 5, sort = "businessName") Pageable pageable) {
+
+	    return ResponseEntity.ok(
+	            businessService.filterBusinesses(keyword, email, pageable)
+	    );
+	}
+	
 	@GetMapping("/{id}")
 	public BusinessResponseDTO getBusinessById(@PathVariable Long id) {
 	    return businessService.getBusinessById(id);
 	}
 	
+	@GetMapping("/search/keyword")
+	public ResponseEntity<Page<BusinessResponseDTO>> searchBusinessesByKeyword(
+	        @RequestParam @NotBlank String keyword,
+	        @PageableDefault(size = 5) Pageable pageable) {
+
+	    return ResponseEntity.ok(
+	            businessService.searchBusinessesByKeyword(keyword, pageable)
+	    );
+	}
+	
 	@GetMapping
-	public List<BusinessResponseDTO> getAllBusinesses() {
-	    return businessService.getAllBusinesses();
+	public Page<BusinessResponseDTO> getAllBusinesses(
+	        @PageableDefault(size = 10, sort = "businessName") Pageable pageable) {
+	    return businessService.getAllBusinesses(pageable);
 	}
 	
 	@PutMapping("/{id}")
@@ -76,4 +86,5 @@ public class BusinessController {
 	        @Valid @RequestBody BusinessRequestDTO request) {
 	    return businessService.updateBusiness(id, request);
 	}
+	
 }
