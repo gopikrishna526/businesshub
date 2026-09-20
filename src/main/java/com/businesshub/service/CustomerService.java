@@ -1,7 +1,7 @@
 package com.businesshub.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.businesshub.dto.CustomerRequestDTO;
 import com.businesshub.dto.CustomerResponseDTO;
+import com.businesshub.dto.CustomerUpdateDTO;
 import com.businesshub.entity.BusinessEntity;
 import com.businesshub.entity.CustomerEntity;
 import com.businesshub.exception.BusinessNotFoundException;
@@ -46,6 +47,14 @@ public class CustomerService {
 
 		BusinessEntity business = businessRepository.findById(request.getBusinessId()).orElseThrow(
 				() -> new BusinessNotFoundException("Business not found with id: " + request.getBusinessId()));
+		
+		if (customerRepository.existsByBusiness_IdAndPhone(
+		        request.getBusinessId(),
+		        request.getPhone())) {
+
+		    throw new IllegalArgumentException(
+		            "Customer with this phone number already exists in this business");
+		}
 
 		CustomerEntity customer = customerMapper.toEntity(request);
 
@@ -56,9 +65,11 @@ public class CustomerService {
 		return customerMapper.toResponseDTO(savedCustomer);
 	}
 
-	public List<CustomerResponseDTO> getAllCustomers() {
+	@PreAuthorize("hasAuthority('ADMIN')")
+	public Page<CustomerResponseDTO> getAllCustomers(Pageable pageable) {
 
-		return customerRepository.findAll().stream().map(customerMapper::toResponseDTO).toList();
+	    return customerRepository.findAll(pageable)
+	            .map(customerMapper::toResponseDTO);
 	}
 
 	public CustomerResponseDTO getCustomerById(Long id) {
@@ -81,9 +92,11 @@ public class CustomerService {
 	    return customerMapper.toResponseDTO(customer);
 	}
 
-	public List<CustomerResponseDTO> getCustomersByBusiness(Long businessId) {
+	public Page<CustomerResponseDTO> getCustomersByBusiness(
+	        Long businessId,
+	        Pageable pageable) {
 
-	    if (!businessRepository.existsById(businessId)) {
+		if (!businessRepository.existsById(businessId)) {
 	        throw new BusinessNotFoundException(
 	                "Business not found with id: " + businessId);
 	    }
@@ -95,53 +108,139 @@ public class CustomerService {
 	        throw new AccessDeniedException(
 	                "You are not the owner of this business");
 	    }
+	    
+	    String email = authentication.getName();
+	    
+	    Page<CustomerEntity> customers =
+	            customerRepository.findByBusiness_IdAndBusiness_Owner_Email(
+	                    businessId,
+	                    email,
+	                    pageable);
 
-	    return customerRepository.findByBusinessId(businessId)
-	            .stream()
-	            .map(customerMapper::toResponseDTO)
-	            .toList();
+	    return customers.map(customerMapper::toResponseDTO);
 	}
+	
+	public Page<CustomerResponseDTO> searchCustomers(
+	        Long businessId,
+	        String name,
+	        Pageable pageable) {
 
-	public CustomerResponseDTO updateCustomer(Long id, CustomerRequestDTO request) {
-		
-		Authentication authentication =
-		        SecurityContextHolder.getContext().getAuthentication();
+	    Page<CustomerEntity> customers =
+	            customerRepository.findByBusinessIdAndNameContainingIgnoreCase(
+	                    businessId,
+	                    name,
+	                    pageable);
 
-		if (!businessSecurity.isOwner(request.getBusinessId(), authentication)) {
-		    throw new AccessDeniedException(
-		            "You are not the owner of this business");
-		}
-
-		CustomerEntity existingCustomer = customerRepository.findById(id)
-				.orElseThrow(() -> new CustomerNotFoundException("Customer not found with id: " + id));
-
-		BusinessEntity business = businessRepository.findById(request.getBusinessId()).orElseThrow(
-				() -> new BusinessNotFoundException("Business not found with id: " + request.getBusinessId()));
-
-		existingCustomer.setName(request.getName());
-		existingCustomer.setEmail(request.getEmail());
-		existingCustomer.setPhone(request.getPhone());
-		existingCustomer.setAddress(request.getAddress());
-		existingCustomer.setBusiness(business);
-
-		CustomerEntity updatedCustomer = customerRepository.save(existingCustomer);
-
-		return customerMapper.toResponseDTO(updatedCustomer);
+	    return customers.map(customerMapper::toResponseDTO);
 	}
-
-	@PreAuthorize("hasAuthority('ADMIN')")
-	public void deleteCustomer(Long id) {
-
-	    CustomerEntity existingCustomer = customerRepository.findById(id)
-	            .orElseThrow(() ->
-	                new CustomerNotFoundException(
-	                    "Customer not found with id: " + id));
+	
+	public Page<CustomerResponseDTO> searchCustomersByKeyword(
+	        Long businessId,
+	        String keyword,
+	        Pageable pageable) {
 
 	    Authentication authentication =
 	            SecurityContextHolder.getContext().getAuthentication();
 
+	    String email = authentication.getName();
+
+	    Page<CustomerEntity> customers =
+	            customerRepository.searchCustomers(
+	                    businessId,
+	                    email,
+	                    keyword,
+	                    pageable);
+
+	    return customers.map(customerMapper::toResponseDTO);
+	}
+	
+	public Page<CustomerResponseDTO> filterCustomers(
+	        Long businessId,
+	        String name,
+	        String email,
+	        String phone,
+	        Pageable pageable) {
+
+	    Authentication authentication =
+	            SecurityContextHolder.getContext().getAuthentication();
+
+	    String ownerEmail = authentication.getName();
+
+	    name = name == null ? "" : name.trim();
+	    email = email == null ? "" : email.trim();
+	    phone = phone == null ? "" : phone.trim();
+
+	    Page<CustomerEntity> customers =
+	            customerRepository.filterCustomers(
+	                    businessId,
+	                    ownerEmail,
+	                    name,
+	                    email,
+	                    phone,
+	                    pageable);
+
+	    return customers.map(customerMapper::toResponseDTO);
+	}
+
+	public CustomerResponseDTO updateCustomer(
+	        Long id,
+	        CustomerUpdateDTO request) {
+
+	    Authentication authentication =
+	            SecurityContextHolder.getContext().getAuthentication();
+
+	    CustomerEntity existingCustomer =
+	            customerRepository.findById(id)
+	                    .orElseThrow(() ->
+	                            new CustomerNotFoundException(
+	                                    "Customer not found with id: " + id));
+
 	    if (!businessSecurity.isOwner(
-	            existingCustomer.getBusiness().getId(), authentication)) {
+	            existingCustomer.getBusiness().getId(),
+	            authentication)) {
+
+	        throw new AccessDeniedException(
+	                "You are not the owner of this customer");
+	    }
+
+	    if (customerRepository.existsByBusiness_IdAndPhoneAndIdNot(
+	            existingCustomer.getBusiness().getId(),
+	            request.getPhone(),
+	            id)) {
+
+	        throw new IllegalArgumentException(
+	                "Customer with this phone number already exists in this business");
+	    }
+	    
+	    existingCustomer.setName(request.getName());
+	    existingCustomer.setEmail(request.getEmail());
+	    existingCustomer.setPhone(request.getPhone());
+	    existingCustomer.setAddress(request.getAddress());
+
+	    CustomerEntity updatedCustomer =
+	            customerRepository.save(existingCustomer);
+
+	    return customerMapper.toResponseDTO(updatedCustomer);
+	}
+
+	@PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+	public void deleteCustomer(Long id) {
+
+	    CustomerEntity existingCustomer =
+	            customerRepository.findById(id)
+	                    .orElseThrow(() ->
+	                            new CustomerNotFoundException(
+	                                    "Customer not found with id: " + id));
+
+	    Authentication authentication =
+	            SecurityContextHolder.getContext().getAuthentication();
+
+	    boolean isAdmin = authentication.getAuthorities().stream()
+	            .anyMatch(a -> a.getAuthority().equals("ADMIN"));
+
+	    if (!isAdmin && !businessSecurity.isOwner(
+	            existingCustomer.getBusiness().getId(),
+	            authentication)) {
 
 	        throw new AccessDeniedException(
 	                "You are not the owner of this business");

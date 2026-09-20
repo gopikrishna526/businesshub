@@ -1,32 +1,17 @@
-package com.businesshub.entity;
+package com.businesshub.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
-@Entity
-@Table(name = "customers")
-public class CustomerEntity {
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
+public class CustomerUpdateDTO {
 
 	@NotBlank(message = "Customer name is required")
 	@Size(min = 3, max = 100, message = "Customer name must be between 3 and 100 characters")
-	@Column(nullable = false)
 	private String name;
 
+	@NotBlank(message = "Customer email is required")
 	@Email(message = "Please provide a valid email address")
 	private String email;
 
@@ -36,15 +21,7 @@ public class CustomerEntity {
 
 	private String address;
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	@JoinColumn(name = "business_id", nullable = false)
-	private BusinessEntity business;
-
-	public CustomerEntity() {
-	}
-
-	public Long getId() {
-		return id;
+	public CustomerUpdateDTO() {
 	}
 
 	public String getName() {
@@ -63,14 +40,6 @@ public class CustomerEntity {
 		return address;
 	}
 
-	public BusinessEntity getBusiness() {
-		return business;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
-	}
-
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -85,9 +54,5 @@ public class CustomerEntity {
 
 	public void setAddress(String address) {
 		this.address = address;
-	}
-
-	public void setBusiness(BusinessEntity business) {
-		this.business = business;
 	}
 }
