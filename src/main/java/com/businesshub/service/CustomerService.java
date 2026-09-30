@@ -13,8 +13,7 @@ import com.businesshub.dto.CustomerResponseDTO;
 import com.businesshub.dto.CustomerUpdateDTO;
 import com.businesshub.entity.BusinessEntity;
 import com.businesshub.entity.CustomerEntity;
-import com.businesshub.exception.BusinessNotFoundException;
-import com.businesshub.exception.CustomerNotFoundException;
+import com.businesshub.exception.ResourceNotFoundException;
 import com.businesshub.mapper.CustomerMapper;
 import com.businesshub.repository.BusinessRepository;
 import com.businesshub.repository.CustomerRepository;
@@ -46,7 +45,7 @@ public class CustomerService {
 		}
 
 		BusinessEntity business = businessRepository.findById(request.getBusinessId()).orElseThrow(
-				() -> new BusinessNotFoundException("Business not found with id: " + request.getBusinessId()));
+				() -> new ResourceNotFoundException("Business not found with id: " + request.getBusinessId()));
 		
 		if (customerRepository.existsByBusiness_IdAndPhone(
 		        request.getBusinessId(),
@@ -76,7 +75,7 @@ public class CustomerService {
 
 	    CustomerEntity customer = customerRepository.findById(id)
 	            .orElseThrow(() ->
-	                new CustomerNotFoundException(
+	                new ResourceNotFoundException(
 	                    "Customer not found with id: " + id));
 
 	    Authentication authentication =
@@ -97,7 +96,7 @@ public class CustomerService {
 	        Pageable pageable) {
 
 		if (!businessRepository.existsById(businessId)) {
-	        throw new BusinessNotFoundException(
+	        throw new ResourceNotFoundException(
 	                "Business not found with id: " + businessId);
 	    }
 
@@ -192,7 +191,7 @@ public class CustomerService {
 	    CustomerEntity existingCustomer =
 	            customerRepository.findById(id)
 	                    .orElseThrow(() ->
-	                            new CustomerNotFoundException(
+	                            new ResourceNotFoundException(
 	                                    "Customer not found with id: " + id));
 
 	    if (!businessSecurity.isOwner(
@@ -229,7 +228,7 @@ public class CustomerService {
 	    CustomerEntity existingCustomer =
 	            customerRepository.findById(id)
 	                    .orElseThrow(() ->
-	                            new CustomerNotFoundException(
+	                            new ResourceNotFoundException(
 	                                    "Customer not found with id: " + id));
 
 	    Authentication authentication =
