@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import com.businesshub.dto.BusinessRequestDTO;
 import com.businesshub.dto.BusinessResponseDTO;
 import com.businesshub.entity.BusinessEntity;
-import com.businesshub.exception.BusinessNotFoundException;
+import com.businesshub.exception.ResourceNotFoundException;
 import com.businesshub.mapper.BusinessMapper;
 import com.businesshub.repository.BusinessRepository;
 import org.springframework.security.core.Authentication;
@@ -36,7 +36,7 @@ public class BusinessService {
 	public void deleteBusiness(Long id) {
 
 		BusinessEntity existingBusiness = businessRepository.findById(id)
-				.orElseThrow(() -> new BusinessNotFoundException("Business not found with id: " + id));
+				.orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + id));
 		businessRepository.delete(existingBusiness);
 	}
 
@@ -61,7 +61,7 @@ public class BusinessService {
 	public BusinessResponseDTO getBusinessById(Long id) {
 
 		BusinessEntity business = businessRepository.findById(id)
-				.orElseThrow(() -> new BusinessNotFoundException("Business not found with id: " + id));
+				.orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + id));
 
 		return businessMapper.toResponseDTO(business);
 	}
@@ -83,7 +83,7 @@ public class BusinessService {
 	public BusinessResponseDTO updateBusiness(Long id, BusinessRequestDTO request) {
 
 		BusinessEntity existingBusiness = businessRepository.findById(id)
-				.orElseThrow(() -> new BusinessNotFoundException("Business not found with id: " + id));
+				.orElseThrow(() -> new ResourceNotFoundException("Business not found with id: " + id));
 
 		existingBusiness.setBusinessName(request.getBusinessName());
 		existingBusiness.setEmail(request.getEmail());
